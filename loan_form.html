@@ -92,9 +92,11 @@
 
         <div id="loanFormContainer" class="space-y-4">
             
-            <div class="bg-gray-100 p-1 rounded-lg flex mb-4">
-                <button type="button" id="btnModeLoan" onclick="setMode('loan')" class="flex-1 py-2 text-sm font-bold rounded-md shadow bg-white text-brand-teal transition-all">Apply for Loan</button>
-                <button type="button" id="btnModeWithdraw" onclick="setMode('withdrawal')" class="flex-1 py-2 text-sm font-bold rounded-md text-gray-500 hover:bg-gray-200 transition-all">SIP Withdrawal</button>
+                        <div class="bg-gray-100 p-1 rounded-lg flex flex-wrap gap-1 mb-4">
+                <button type="button" id="btnModeLoan" onclick="setMode('loan')" class="flex-1 min-w-[48%] py-2 text-xs font-bold rounded-md shadow bg-white text-brand-teal transition-all">Apply for Loan</button>
+                <button type="button" id="btnModeWithdraw" onclick="setMode('withdrawal')" class="flex-1 min-w-[48%] py-2 text-xs font-bold rounded-md text-gray-500 hover:bg-gray-200 transition-all">SIP Withdrawal</button>
+                <button type="button" id="btnModeCredit" onclick="setMode('credit10')" class="flex-1 min-w-[48%] py-2 text-xs font-bold rounded-md text-gray-500 hover:bg-gray-200 transition-all">10 Days Credit</button>
+                <button type="button" id="btnModeRecharge" onclick="setMode('recharge')" class="flex-1 min-w-[48%] py-2 text-xs font-bold rounded-md text-gray-500 hover:bg-gray-200 transition-all">Recharge Loan</button>
                 <input type="hidden" id="appMode" value="loan"> 
             </div>
 
@@ -118,7 +120,30 @@
                 </div>
             </div>
 
-            <div>
+            <!-- 🔥 NEW: RECHARGE SPECIFIC FIELDS -->
+            <div id="rechargeFields" class="hidden space-y-4">
+                <div>
+                    <label class="text-sm font-semibold text-gray-700">Operator</label>
+                    <select id="operatorSelect" onchange="populateRechargePlans()" class="w-full p-3 border rounded-lg bg-gray-50 mt-1">
+                        <option value="" disabled selected>Select Operator</option>
+                        <option value="Jio">Jio</option>
+                        <option value="Airtel">Airtel</option>
+                        <option value="Vi">Vi</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="text-sm font-semibold text-gray-700">Mobile Number</label>
+                    <input type="tel" id="mobileNumber" placeholder="Enter 10-digit Number" maxlength="10" class="w-full p-3 border rounded-lg bg-gray-50 mt-1">
+                </div>
+                <div>
+                    <label class="text-sm font-semibold text-gray-700">Select Plan</label>
+                    <select id="planSelect" onchange="updateRechargeAmount()" class="w-full p-3 border rounded-lg bg-gray-50 mt-1">
+                        <option value="" disabled selected>Select Operator First...</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="amountFieldWrapper">
                 <label class="text-sm font-semibold text-gray-700" id="amountLabel">Loan Amount (₹)</label>
                 <input type="number" id="amount" placeholder="Enter Amount" min="1" class="w-full p-3 border rounded-lg bg-gray-50 text-lg font-bold text-brand-teal mt-1">
                 <p id="limit-msg" class="text-xs mt-1 hidden font-semibold"></p>
@@ -349,36 +374,70 @@
         }
     }
 
-    // --- 2. LOGIC HANDLERS ---
+       // --- 2. LOGIC HANDLERS ---
     function setMode(mode) {
         document.getElementById('appMode').value = mode;
-        const btnLoan = document.getElementById('btnModeLoan');
-        const btnWithdraw = document.getElementById('btnModeWithdraw');
         
+        const btns = {
+            'loan': document.getElementById('btnModeLoan'),
+            'withdrawal': document.getElementById('btnModeWithdraw'),
+            'credit10': document.getElementById('btnModeCredit'),
+            'recharge': document.getElementById('btnModeRecharge')
+        };
+
+        // Reset all buttons
+        Object.values(btns).forEach(btn => {
+            if(btn) btn.className = "flex-1 min-w-[48%] py-2 text-xs font-bold rounded-md text-gray-500 hover:bg-gray-200 transition-all";
+        });
+
+        // Set active button
+        if(btns[mode]) btns[mode].className = "flex-1 min-w-[48%] py-2 text-xs font-bold rounded-md shadow bg-white text-brand-teal transition-all";
+
+        const durWrap = document.getElementById('durationWrapper');
+        const withWrap = document.getElementById('withdrawalModeField');
+        const rechWrap = document.getElementById('rechargeFields');
+        const amtWrap = document.getElementById('amountFieldWrapper');
+        const repWrap = document.getElementById('repaymentTypeWrapper');
+
+        // Hide all by default
+        durWrap.classList.add('hidden');
+        withWrap.classList.add('hidden');
+        rechWrap.classList.add('hidden');
+        amtWrap.classList.remove('hidden');
+        repWrap.classList.add('hidden');
+        document.getElementById('dateBanner').classList.add('hidden');
+        document.getElementById('amount').readOnly = false;
+
         if (mode === 'loan') {
-            btnLoan.className = "flex-1 py-2 text-sm font-bold rounded-md shadow bg-white text-brand-teal transition-all";
-            btnWithdraw.className = "flex-1 py-2 text-sm font-bold rounded-md text-gray-500 hover:bg-gray-200 transition-all";
             document.getElementById('portal-subtitle').innerText = "Loan Application Portal";
             document.getElementById('amountLabel').innerText = "Loan Amount (₹)";
             document.getElementById('limitLabel').innerText = "Loan Eligibility";
-            document.getElementById('durationWrapper').classList.remove('hidden');
-            document.getElementById('withdrawalModeField').classList.add('hidden');
-            document.getElementById('dateBanner').classList.add('hidden');
+            durWrap.classList.remove('hidden');
             document.getElementById('generateBtn').innerHTML = `GENERATE FORM <i class="fas fa-file-export ml-2"></i>`;
-        } else {
-            btnWithdraw.className = "flex-1 py-2 text-sm font-bold rounded-md shadow bg-white text-brand-teal transition-all";
-            btnLoan.className = "flex-1 py-2 text-sm font-bold rounded-md text-gray-500 hover:bg-gray-200 transition-all";
+        } else if (mode === 'withdrawal') {
             document.getElementById('portal-subtitle').innerText = "SIP Withdrawal Portal";
             document.getElementById('amountLabel').innerText = "Withdrawal Amount (₹)";
             document.getElementById('limitLabel').innerText = "Withdrawal Limit (50%)";
-            document.getElementById('durationWrapper').classList.add('hidden');
-            document.getElementById('withdrawalModeField').classList.remove('hidden');
+            withWrap.classList.remove('hidden');
             document.getElementById('generateBtn').innerHTML = `GENERATE WITHDRAWAL <i class="fas fa-file-export ml-2"></i>`;
-            if (currentMember) validateAmount(); // 🔥 Updated Logic
+        } else if (mode === 'credit10') {
+            document.getElementById('portal-subtitle').innerText = "10 Days Credit Portal";
+            document.getElementById('amountLabel').innerText = "Credit Amount (₹)";
+            document.getElementById('limitLabel').innerText = "Credit Limit (50%)";
+            amtWrap.classList.remove('hidden');
+            document.getElementById('generateBtn').innerHTML = `GENERATE CREDIT <i class="fas fa-file-export ml-2"></i>`;
+        } else if (mode === 'recharge') {
+            document.getElementById('portal-subtitle').innerText = "Recharge Loan Portal";
+            document.getElementById('amountLabel').innerText = "Recharge Amount (₹)";
+            document.getElementById('limitLabel').innerText = "Loan Eligibility";
+            rechWrap.classList.remove('hidden');
+            document.getElementById('amount').readOnly = true; 
+            document.getElementById('generateBtn').innerHTML = `GENERATE RECHARGE <i class="fas fa-file-export ml-2"></i>`;
         }
-        // Mode change hone par phir se validate karo
+
         if (currentMember) handleMemberChange();
     }
+
 
     function handleMemberChange() {
         const id = document.getElementById('nameSelect').value;
@@ -417,75 +476,89 @@
         // 1. Pehle KYC Validate karo (Ye Button Disable karega agar document missing hai)
         validateKYC(currentMember);
         
-        // 2. Limit Calculate karo
+            // 2. Limit Calculate karo
         const mode = document.getElementById('appMode').value;
         let limit = 0;
-        if (mode === 'loan') {
+        if (mode === 'loan' || mode === 'recharge') {
             if (balance < 0) limit = 0;
             else if (balance < 25000) limit = balance * 1.5;
             else limit = balance * 2.0;
             if (limit > 50000) limit = 50000;
-        } else {
+        } else if (mode === 'withdrawal' || mode === 'credit10') {
             limit = balance > 0 ? balance * 0.5 : 0;
         }
         currentMaxLimit = Math.floor(limit);
         document.getElementById('displayEligibleLimit').innerText = currentMaxLimit.toLocaleString('en-IN');
         document.getElementById('walletInfo').classList.remove('hidden');
         
-        // 3. Amount Field check karo (Ye bhi button ko control karta hai)
+        // 3. Amount Field check karo
         validateAmount();
     }
 
     // 🔥 STRICT KYC VERIFICATION LOGIC (UPDATED)
     function validateKYC(member) {
         const missing = [];
-
-        // Check 1: Profile Photo
-        if(!member.profilePicUrl || member.profilePicUrl.length < 5) {
-            missing.push("Photo");
-        }
-
-        // Check 2: Front Document (Aadhaar Front)
+        if(!member.profilePicUrl || member.profilePicUrl.length < 5) missing.push("Photo");
         const front = member.documentFrontUrl || member.documentUrl;
-        if(!front || front.length < 5) {
-            missing.push("ID Proof (Front)");
-        }
-
-        // Check 3: Back Document (Aadhaar Back) - 🔥 FIXED HERE
-        if(!member.documentBackUrl || member.documentBackUrl.length < 5) {
-            missing.push("Address Proof (Back)");
-        }
-
-        // Check 4: Signature - 🔥 FIXED HERE
-        if(!member.signatureUrl || member.signatureUrl.length < 5) {
-            missing.push("Signature");
-        }
-
-        // Check 5: Email
-        if(!member.email || !member.email.includes('@')) {
-            missing.push("Email");
-        }
+        if(!front || front.length < 5) missing.push("ID Proof (Front)");
+        if(!member.documentBackUrl || member.documentBackUrl.length < 5) missing.push("Address Proof (Back)");
+        if(!member.signatureUrl || member.signatureUrl.length < 5) missing.push("Signature");
+        if(!member.email || !member.email.includes('@')) missing.push("Email");
 
         const container = document.getElementById('kycStatusContainer');
         const btn = document.getElementById('generateBtn');
         
-        // Purane classes hatao
         container.classList.remove('hidden', 'bg-red-50', 'bg-green-50', 'border-red-200', 'border-green-200', 'text-red-700', 'text-green-700');
 
         if (missing.length === 0) {
-            // ALL OK
             container.classList.add('bg-green-50', 'border-green-200', 'text-green-700');
             container.innerHTML = `<i class="fas fa-check-circle"></i> KYC Verified (All Docs OK)`;
-            btn.disabled = false; 
-            btn.classList.remove('opacity-50', 'cursor-not-allowed');
+            btn.disabled = false; btn.classList.remove('opacity-50', 'cursor-not-allowed');
         } else {
-            // MISSING DOCUMENTS
             container.classList.add('bg-red-50', 'border-red-200', 'text-red-700');
             container.innerHTML = `<div class="font-bold flex items-center"><i class="fas fa-times-circle mr-2"></i> Verification Failed</div><div class="text-[10px] mt-1 ml-5">Missing: ${missing.join(', ')}</div>`;
-            
-            // Force Disable Button
-            btn.disabled = true; 
-            btn.classList.add('opacity-50', 'cursor-not-allowed');
+            btn.disabled = true; btn.classList.add('opacity-50', 'cursor-not-allowed');
+        }
+    }
+
+    // --- 🔥 NEW RECHARGE LOGIC ---
+    function populateRechargePlans() {
+        const op = document.getElementById('operatorSelect').value;
+        const planSel = document.getElementById('planSelect');
+        planSel.innerHTML = '<option value="" disabled selected>Select Plan</option>';
+        
+        let plans = [];
+        if (op === 'Jio') {
+            plans = [
+                { id: 'jio_899', amt: 899, txt: '₹899 (90 Days, EMI ₹350/mo)', emi: 350, dur: 3 },
+                { id: 'jio_3599', amt: 3599, txt: '₹3599 (365 Days, EMI ₹345/mo)', emi: 345, dur: 12 }
+            ];
+        } else if (op === 'Airtel') {
+            plans = [
+                { id: 'airtel_979', amt: 979, txt: '₹979 (84 Days, EMI ₹345/mo)', emi: 345, dur: 3 }
+            ];
+        } else if (op === 'Vi') {
+            plans = [
+                { id: 'vi_1005', amt: 1005, txt: '₹1005 (EMI ₹350/mo)', emi: 350, dur: 3 }
+            ];
+        }
+
+        plans.forEach(p => {
+            const opt = document.createElement('option');
+            opt.value = JSON.stringify(p);
+            opt.text = p.txt;
+            planSel.appendChild(opt);
+        });
+        document.getElementById('amount').value = '';
+        validateAmount();
+    }
+
+    function updateRechargeAmount() {
+        const val = document.getElementById('planSelect').value;
+        if(val) {
+            const plan = JSON.parse(val);
+            document.getElementById('amount').value = plan.amt;
+            validateAmount();
         }
     }
 
@@ -498,47 +571,49 @@
         // 1. KYC Check
         const kycFailed = document.getElementById('kycStatusContainer').innerHTML.includes('Missing');
         if (kycFailed) {
-            btn.disabled = true;
-            btn.classList.add('opacity-50', 'cursor-not-allowed');
+            btn.disabled = true; btn.classList.add('opacity-50', 'cursor-not-allowed');
             return; 
         }
 
-        // 2. 🔥 NEW: Withdrawal Logic (23-30 June OR Balance >= 50000)
+        // 2. Withdrawal Logic Check
         if (mode === 'withdrawal') {
             const today = new Date(); 
             const isJuneWindow = (today.getMonth() === 5) && (today.getDate() >= 23 && today.getDate() <= 30);
             const isVipBalance = currentMemberBalance >= 50000;
-            
             const banner = document.getElementById('dateBanner');
             const bannerText = document.querySelector('#dateBanner .text-sm');
 
             if (!isJuneWindow && !isVipBalance) {
-                // Not allowed
                 banner.classList.remove('hidden');
                 if(bannerText) bannerText.innerHTML = `Only allowed between <span class="font-bold">23rd - 30th June</span> OR for SIP Balance <span class="font-bold">₹50,000+</span>.`;
-                
-                btn.disabled = true;
-                btn.classList.add('opacity-50', 'cursor-not-allowed');
-                return; // Yahin rok do, button disable hi rahega
+                btn.disabled = true; btn.classList.add('opacity-50', 'cursor-not-allowed');
+                return; 
             } else {
-                // Allowed
                 banner.classList.add('hidden');
             }
         }
 
-        // 3. Amount Check
+        // 3. Recharge Check
+        if (mode === 'recharge') {
+            const op = document.getElementById('operatorSelect').value;
+            const mob = document.getElementById('mobileNumber').value;
+            if(!op || mob.length !== 10 || amt <= 0) {
+                btn.disabled = true; btn.classList.add('opacity-50', 'cursor-not-allowed');
+                return;
+            }
+        }
+
+        // 4. Limit Check
         if (amt > 0) {
             msg.classList.remove('hidden');
             if (amt > currentMaxLimit) {
                 msg.innerText = `Exceeds Limit (Max: ${currentMaxLimit})`;
                 msg.className = "text-xs mt-1 font-semibold text-red-600";
-                btn.disabled = true; 
-                btn.classList.add('opacity-50', 'cursor-not-allowed'); 
+                btn.disabled = true; btn.classList.add('opacity-50', 'cursor-not-allowed'); 
             } else {
                 msg.innerText = "Amount is within limit.";
                 msg.className = "text-xs mt-1 font-semibold text-green-600";
-                btn.disabled = false; 
-                btn.classList.remove('opacity-50', 'cursor-not-allowed'); 
+                btn.disabled = false; btn.classList.remove('opacity-50', 'cursor-not-allowed'); 
             }
             
             if (mode === 'loan') {
@@ -551,14 +626,15 @@
             }
         } else {
             msg.classList.add('hidden');
-            btn.disabled = true;
-            btn.classList.add('opacity-50', 'cursor-not-allowed');
+            btn.disabled = true; btn.classList.add('opacity-50', 'cursor-not-allowed');
         }
     }
     
     document.getElementById('amount').addEventListener('input', validateAmount);
+    document.getElementById('mobileNumber')?.addEventListener('input', validateAmount);
 
     function populateDuration(amt) {
+
         const sel = document.getElementById('durationRateSelect');
         sel.innerHTML = '';
         let opts = [];
@@ -666,59 +742,83 @@
             }
         }
 
-        if (mode === 'loan') {
-            document.getElementById('preview-subtitle').innerText = "PERSONAL LOAN";
+        if (mode === 'loan' || mode === 'credit10' || mode === 'recharge') {
+            
+            if(mode === 'loan') document.getElementById('preview-subtitle').innerText = "PERSONAL LOAN";
+            if(mode === 'credit10') document.getElementById('preview-subtitle').innerText = "10 DAYS CREDIT";
+            if(mode === 'recharge') {
+                const op = document.getElementById('operatorSelect').value;
+                const mob = document.getElementById('mobileNumber').value;
+                document.getElementById('preview-subtitle').innerText = `${op.toUpperCase()} RECHARGE (${mob})`;
+            }
+
             document.getElementById('loanFields').classList.remove('hidden');
             document.getElementById('loanCalculations').classList.remove('hidden');
             document.getElementById('withdrawFields').classList.add('hidden');
             document.getElementById('withdrawNotice').classList.add('hidden');
             
-            if(currentMember.guarantorName) {
+            if(currentMember.guarantorName && mode === 'loan') {
                 document.getElementById('displayGuarantor').innerText = currentMember.guarantorName;
                 document.getElementById('guarantorRow').classList.remove('hidden');
                 document.getElementById('guarantorRow').style.display = 'flex';
+            } else {
+                document.getElementById('guarantorRow').classList.add('hidden');
             }
 
-            const [months, rate] = dur.split('-');
-            const mRate = parseFloat(rate);
-            const mCount = parseInt(months);
-            
-            const repTypeEl = document.querySelector('input[name="repaymentType"]:checked');
-            const repType = repTypeEl ? repTypeEl.value : 'EMI';
-            
-            const interest = amt * (mRate/100) * mCount;
-            const total = amt + interest;
-            
             let emiDisplay = '';
             let rateDisplay = '';
-            
-            if (amt < 25000 && repType === 'Fixed') {
+            let total = amt;
+            const endDate = new Date();
+
+            if (mode === 'credit10') {
+                rateDisplay = '0% (10 Days)';
                 emiDisplay = 'One-time Pay';
-                rateDisplay = `${(mRate * mCount).toFixed(1)}% Fixed Total`;
-            } else if (amt >= 25000) {
-                emiDisplay = `₹${Math.ceil(total / mCount)}`;
-                rateDisplay = `0.7% Monthly`;
+                endDate.setDate(endDate.getDate() + 10);
+            } else if (mode === 'recharge') {
+                const planStr = document.getElementById('planSelect').value;
+                const plan = JSON.parse(planStr);
+                total = plan.emi * plan.dur; 
+                rateDisplay = `Recharge Facility`;
+                emiDisplay = `₹${plan.emi}`;
+                endDate.setMonth(endDate.getMonth() + plan.dur);
             } else {
-                emiDisplay = `₹${Math.ceil(total / mCount)}`;
-                rateDisplay = `1% Monthly`;
+                // Regular Loan Calculation
+                const [months, rate] = dur.split('-');
+                const mRate = parseFloat(rate);
+                const mCount = parseInt(months);
+                
+                const repTypeEl = document.querySelector('input[name="repaymentType"]:checked');
+                const repType = repTypeEl ? repTypeEl.value : 'EMI';
+                
+                const interest = amt * (mRate/100) * mCount;
+                total = amt + interest;
+                
+                if (amt < 25000 && repType === 'Fixed') {
+                    emiDisplay = 'One-time Pay';
+                    rateDisplay = `${(mRate * mCount).toFixed(1)}% Fixed Total`;
+                } else if (amt >= 25000) {
+                    emiDisplay = `₹${Math.ceil(total / mCount)}`;
+                    rateDisplay = `0.7% Monthly`;
+                } else {
+                    emiDisplay = `₹${Math.ceil(total / mCount)}`;
+                    rateDisplay = `1% Monthly`;
+                }
+                endDate.setMonth(endDate.getMonth() + mCount);
             }
             
-            const endDate = new Date();
-            endDate.setMonth(endDate.getMonth() + mCount);
-            
-            document.getElementById('displayRate').innerText = `${rateDisplay} (${mCount} Months)`;
+            document.getElementById('displayRate').innerText = rateDisplay;
             
             const emiParent = document.getElementById('displayEMI').parentNode;
             if (emiDisplay === 'One-time Pay') {
                 emiParent.innerHTML = '<span id="displayEMI" class="text-brand-teal font-bold text-sm">One-time Pay</span>';
             } else {
-                emiParent.innerHTML = '₹<span id="displayEMI">' + Math.ceil(total / mCount) + '</span>';
+                emiParent.innerHTML = '₹<span id="displayEMI">' + emiDisplay.replace('₹','') + '</span>';
             }
             
             document.getElementById('displayTotal').innerText = total.toFixed(0);
             document.getElementById('repaymentDate').innerText = endDate.toLocaleDateString('en-GB');
 
-        } else {
+        } else if (mode === 'withdrawal') {
             document.getElementById('preview-subtitle').innerText = "SIP WITHDRAWAL";
             document.getElementById('loanFields').classList.add('hidden');
             document.getElementById('loanCalculations').classList.add('hidden');
@@ -802,7 +902,5 @@
     initApp();
 
 </script>
-
-
 </body>
 </html>
