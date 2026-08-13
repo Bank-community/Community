@@ -602,11 +602,11 @@
 <body>
 
     <div class="main-wrapper">
-        <header class="premium-header">
+               <header class="premium-header">
             <span class="header-super-title">Trust Community Fund</span>
             <h1 class="header-main-title">Loan Dashboard</h1>
-            <button id="generate-credit-btn"><i data-feather="plus-circle" style="width:16px;"></i> Generate Card</button>
         </header>
+
 
         <div class="stats-wrapper">
             <div class="combined-stats-card">
@@ -634,7 +634,7 @@
             <span id="clear-search" style="position: absolute; right: 35px; top: 50%; transform: translateY(-50%); cursor: pointer; font-size: 1.5em; color: #888; display: none; line-height: 1;">&times;</span>
         </div>
 
-        <div id="loader">
+               <div id="loader">
             <div class="spinner"></div>
             Loading Active Loans...
         </div>
@@ -642,43 +642,8 @@
         <div id="outstanding-loans-container"></div>
     </div>
 
-    <div class="modal-overlay" id="gen-modal">
-        <div class="modal-box">
-            <button class="close-modal">&times;</button>
-            <h3 style="text-align:center; color:var(--primary-blue); margin-top:0; font-family: var(--font-heading);">GENERATE CARD</h3>
-            
-            <div class="form-group">
-                <label>Member</label>
-                <select id="m-select" class="form-control"><option value="">Loading...</option></select>
-            </div>
-            
-            <div class="form-group">
-                <label>Type</label>
-                <select id="t-select" class="form-control">
-                    <option value="credit">10 Days Credit</option>
-                    <option value="recharge">Recharge</option>
-                </select>
-            </div>
-            
-            <div class="form-group" id="amt-group">
-                <label>Outstanding Amount</label>
-                <input type="number" id="amt-input" class="form-control" disabled placeholder="Select member first">
-            </div>
-            
-            <div class="form-group" id="prov-group" style="display:none;">
-                <label>Operator</label>
-                <select id="prov-select" class="form-control">
-                    <option>Jio</option><option>Airtel</option><option>Vi</option><option>BSNL</option>
-                </select>
-            </div>
-
-            <button class="btn-gen" id="btn-create">Create Card</button>
-            <div id="gen-result" style="margin-top:20px;"></div>
-        </div>
-    </div>
-
     <nav class="bottom-nav-container">
-        <div class="nav-item" onclick="window.location.href='index.html'">
+    <div class="nav-item" onclick="window.location.href='index.html'">
             <i data-feather="home" class="nav-icon"></i>
             <span class="nav-text">Home</span>
         </div>

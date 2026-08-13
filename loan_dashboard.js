@@ -22,26 +22,16 @@ document.addEventListener("DOMContentLoaded", async () => {
         search: document.getElementById('search-input'),
 
         // Filters
-        btnAll: document.getElementById('filter-all'),
+                btnAll: document.getElementById('filter-all'),
         btnPersonal: document.getElementById('filter-personal'),
         btnCollab: document.getElementById('filter-collab'),
-        btnRecharge: document.getElementById('filter-recharge'),
-
-        // Admin Modal Els
-        modal: document.getElementById('gen-modal'),
-        mSelect: document.getElementById('m-select'),
-        tSelect: document.getElementById('t-select'),
-        amtInput: document.getElementById('amt-input'),
-        provSelect: document.getElementById('prov-select'),
-        provGroup: document.getElementById('prov-group'),
-        btnCreate: document.getElementById('btn-create'),
-        genResult: document.getElementById('gen-result')
+        btnRecharge: document.getElementById('filter-recharge')
     };
 
     try {
         setupFilters(); // Setup Click Listeners
-        setupAdminModal(); // Setup Generator Logic
         loadFromCache();
+
 
         const res = await fetch(PRELOAD_CONFIG_URL);
         if(res.ok) {
@@ -780,46 +770,8 @@ function getStandardCardHTML(loan, amount, dateStr, daysActive, providerInfo, em
 
 
 
-// --- ADMIN GENERATOR ---
-function setupAdminModal() {
-    if(!state.els.btnCreate) return;
-
-    document.getElementById('generate-credit-btn').onclick = () => {
-        state.els.modal.style.visibility = 'visible';
-        state.els.modal.style.opacity = '1';
-        state.els.genResult.innerHTML = '';
-        fillDropdown();
-    };
-    document.querySelector('.close-modal').onclick = () => {
-        state.els.modal.style.visibility = 'hidden';
-        state.els.modal.style.opacity = '0';
-    };
-
-    state.els.mSelect.onchange = () => {
-        state.els.amtInput.disabled = !state.els.mSelect.value;
-        if(state.els.mSelect.value) state.els.amtInput.focus();
-    };
-    state.els.tSelect.onchange = () => {
-        state.els.provGroup.style.display = (state.els.tSelect.value === 'recharge') ? 'block' : 'none';
-    };
-    state.els.btnCreate.onclick = () => {
-        const mId = state.els.mSelect.value;
-        if(!mId) return alert('Select Member');
-        const amt = parseFloat(state.els.amtInput.value);
-        if(!amt) return alert('Enter Amount');
-
-        const name = state.els.mSelect.options[state.els.mSelect.selectedIndex].text;
-        const pic = state.els.mSelect.options[state.els.mSelect.selectedIndex].dataset.pic;
-        const typeKey = state.els.tSelect.value;
-        const dateStr = new Date().toLocaleDateString('en-GB', {day:'numeric', month:'short', year:'numeric'});
-
-        const mockLoan = { loanId: 'preview', memberName: name, pic: pic, loanType: typeKey === 'credit' ? '10 Days Credit' : 'Recharge', tenureMonths: 0 };
-        let providerInfo = (typeKey === 'recharge') ? state.els.provSelect.value : '';
-        state.els.genResult.innerHTML = getStandardCardHTML(mockLoan, amt, dateStr, 1, providerInfo, null);
-    };
-}
-
 // --- 🔥 NEW: COLLAB CARD GENERATOR 🔥 ---
+
 function getCollabCardHTML(loan, amount, dateStr, tenureMonths, emi) {
     const loanId = `card-${loan.loanId}`;
     const parsedTenure = parseInt(tenureMonths) || 1;
