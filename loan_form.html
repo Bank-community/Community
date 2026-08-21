@@ -605,6 +605,13 @@
                 btn.disabled = true; btn.classList.add('opacity-50', 'cursor-not-allowed');
                 return;
             }
+            
+            // 🔥 RECHARGE BYPASS: Allow generation regardless of balance/limit
+            msg.classList.remove('hidden');
+            msg.innerText = "Recharge allowed (No limit applied).";
+            msg.className = "text-xs mt-1 font-semibold text-green-600";
+            btn.disabled = false; btn.classList.remove('opacity-50', 'cursor-not-allowed');
+            return; // Exit here to skip the limit check below
         }
 
         // 4. Limit Check
