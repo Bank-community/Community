@@ -4,11 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
   <title>TCF - Member Portal</title>
-  
+
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-  
+
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
@@ -29,7 +29,7 @@
 
   <style>
     body { font-family: 'Poppins', sans-serif; background: #f3f4f6; overflow-x: hidden; }
-    
+
     /* Input & Card Styles */
     .form-card { background: white; border-top: 5px solid #0f766e; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1); }
     input:focus, select:focus { border-color: #0f766e; ring: 2px solid #0f766e; outline: none; }
@@ -76,7 +76,7 @@
 <body>
 
   <div id="input-page" class="min-h-screen flex flex-col items-center py-6 px-4">
-    
+
     <div id="dateBanner" class="w-full max-w-lg mb-4 hidden">
         <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded shadow-md">
             <p class="font-bold">Withdrawal Portal Closed</p>
@@ -91,7 +91,7 @@
         </div>
 
         <div id="loanFormContainer" class="space-y-4">
-            
+
                         <div class="bg-gray-100 p-1 rounded-lg flex flex-wrap gap-1 mb-4">
                 <button type="button" id="btnModeLoan" onclick="setMode('loan')" class="flex-1 min-w-[48%] py-2 text-xs font-bold rounded-md shadow bg-white text-brand-teal transition-all">Apply for Loan</button>
                 <button type="button" id="btnModeWithdraw" onclick="setMode('withdrawal')" class="flex-1 min-w-[48%] py-2 text-xs font-bold rounded-md text-gray-500 hover:bg-gray-200 transition-all">SIP Withdrawal</button>
@@ -105,7 +105,7 @@
                 <select id="nameSelect" class="w-full p-3 border rounded-lg bg-gray-50 mt-1">
                     <option value="" disabled selected>Loading members...</option>
                 </select>
-                
+
                 <div id="kycStatusContainer" class="hidden mt-2 p-2 text-xs rounded border"></div>
 
                 <div id="walletInfo" class="hidden mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg space-y-2">
@@ -174,7 +174,7 @@
                 </div>
             </div>
 
-            
+
             <div id="withdrawalModeField" class="hidden">
                  <label class="text-sm font-semibold text-gray-700">Transaction Mode</label>
                  <input type="text" value="One Time Withdrawal (0% Interest)" readonly class="w-full p-3 border rounded-lg bg-gray-100 text-gray-500 mt-1 cursor-not-allowed">
@@ -231,7 +231,7 @@
                           <div class="info-label">Mobile:</div>
                           <div class="info-val" id="displayMobile"></div>
                       </div>
-                      
+
                       <div id="withdrawFields" class="hidden">
                           <div class="info-row"><div class="info-icon"><i class="fas fa-id-card"></i></div><div class="info-label">Membership ID:</div><div class="info-val" id="displayMemId"></div></div>
                           <div class="info-row"><div class="info-icon"><i class="fas fa-calendar-check"></i></div><div class="info-label">Joining Date:</div><div class="info-val" id="displayJoinDate"></div></div>
@@ -263,7 +263,7 @@
                           </div>
                       </div>
                   </div>
-                  
+
                   <div style="border-top: 2px dashed #cbd5e1; margin-top: 20px; padding-top: 10px; display: flex; justify-content: flex-end;">
                       <div class="text-center" style="min-width: 120px;">
                            <img id="displaySignature" src="" crossorigin="anonymous" class="h-12 object-contain mx-auto mb-1 hidden">
@@ -308,7 +308,7 @@
                   <p id="loanRequestText" class="text-center italic text-brand-teal text-sm font-medium mb-8">"I request approval for this application."</p>
                   <div class="flex justify-between items-end px-10 pb-4 border-t border-gray-100 pt-4">
                       <div class="text-center">
-                           <img src="https://ik.imagekit.io/kdtvm0r78/20251206_210616.png" crossorigin="anonymous" class="w-28 opacity-80" style="mix-blend-mode: multiply;">
+                           <img src="https://ik.imagekit.io/nsyr92pse/1771753348091.png" crossorigin="anonymous" class="w-28 opacity-80" style="mix-blend-mode: multiply;">
                            <p class="text-[10px] text-gray-500 uppercase font-bold mt-1">Community Stamp</p>
                       </div>
                       <div class="text-center">
@@ -330,15 +330,15 @@
     let currentMaxLimit = 0;
     let currentMemberBalance = 0; // 🔥 NEW GLOBAL VARIABLE
 
-  
+
     // --- 1. INITIALIZE & FETCH DATA ---
     async function initApp() {
         try {
             const res = await fetch('/api/firebase-config');
             const config = await res.json();
-            
+
             if (!firebase.apps.length) firebase.initializeApp(config);
-            
+
             firebase.auth().onAuthStateChanged(user => {
                 if (user) loadMembers();
                 else firebase.auth().signInAnonymously().catch(e => window.location.href='/login.html');
@@ -356,13 +356,13 @@
                 db.ref('members').once('value'),
                 db.ref('transactions').once('value')
             ]);
-            
+
             membersData = membersSnap.val() || {};
             transactionsData = Object.values(txSnap.val() || {});
 
             const select = document.getElementById('nameSelect');
             select.innerHTML = '<option value="" disabled selected>Select Member</option>';
-            
+
             Object.entries(membersData)
                 .filter(([_, m]) => m.status === 'Approved')
                 .sort((a,b) => a[1].fullName.localeCompare(b[1].fullName))
@@ -371,7 +371,7 @@
                     opt.value = id; opt.text = m.fullName;
                     select.appendChild(opt);
                 });
-            
+
             select.addEventListener('change', handleMemberChange);
         } catch (error) {
             console.error("Data Load Error: ", error);
@@ -381,7 +381,7 @@
        // --- 2. LOGIC HANDLERS ---
     function setMode(mode) {
         document.getElementById('appMode').value = mode;
-        
+
         const btns = {
             'loan': document.getElementById('btnModeLoan'),
             'withdrawal': document.getElementById('btnModeWithdraw'),
@@ -458,7 +458,7 @@
 
         myTxns.forEach(t => {
             const txDate = new Date(t.date || 0);
-            
+
             // अगर ट्रांजैक्शन फ्यूचर (आने वाले महीने या साल) का है, तो उसे इग्नोर करें
             if (txDate.getFullYear() > currentYear || (txDate.getFullYear() === currentYear && txDate.getMonth() > currentMonth)) {
                 return; 
@@ -476,10 +476,10 @@
         const balance = calculatedBalance;
         currentMemberBalance = balance; // 🔥 Balance ko yahan save kiya
         document.getElementById('displayWalletBalance').innerText = balance.toLocaleString('en-IN');
-        
+
         // 1. Pehle KYC Validate karo (Ye Button Disable karega agar document missing hai)
         validateKYC(currentMember);
-        
+
             // 2. Limit Calculate karo
         const mode = document.getElementById('appMode').value;
         let limit = 0;
@@ -494,7 +494,7 @@
         currentMaxLimit = Math.floor(limit);
         document.getElementById('displayEligibleLimit').innerText = currentMaxLimit.toLocaleString('en-IN');
         document.getElementById('walletInfo').classList.remove('hidden');
-        
+
         // 3. Amount Field check karo
         validateAmount();
     }
@@ -511,7 +511,7 @@
 
         const container = document.getElementById('kycStatusContainer');
         const btn = document.getElementById('generateBtn');
-        
+
         container.classList.remove('hidden', 'bg-red-50', 'bg-green-50', 'border-red-200', 'border-green-200', 'text-red-700', 'text-green-700');
 
         if (missing.length === 0) {
@@ -530,7 +530,7 @@
         const op = document.getElementById('operatorSelect').value;
         const planSel = document.getElementById('planSelect');
         planSel.innerHTML = '<option value="" disabled selected>Select Plan</option>';
-        
+
         let plans = [];
         if (op === 'Jio') {
             plans = [
@@ -571,7 +571,7 @@
         const msg = document.getElementById('limit-msg');
         const mode = document.getElementById('appMode').value;
         const btn = document.getElementById('generateBtn');
-        
+
         // 1. KYC Check
         const kycFailed = document.getElementById('kycStatusContainer').innerHTML.includes('Missing');
         if (kycFailed) {
@@ -605,7 +605,7 @@
                 btn.disabled = true; btn.classList.add('opacity-50', 'cursor-not-allowed');
                 return;
             }
-            
+
             // 🔥 RECHARGE BYPASS: Allow generation regardless of balance/limit
             msg.classList.remove('hidden');
             msg.innerText = "Recharge allowed (No limit applied).";
@@ -626,7 +626,7 @@
                 msg.className = "text-xs mt-1 font-semibold text-green-600";
                 btn.disabled = false; btn.classList.remove('opacity-50', 'cursor-not-allowed'); 
             }
-            
+
             if (mode === 'loan') {
                 const repWrap = document.getElementById('repaymentTypeWrapper');
                 if (repWrap) {
@@ -640,7 +640,7 @@
             btn.disabled = true; btn.classList.add('opacity-50', 'cursor-not-allowed');
         }
     }
-    
+
     document.getElementById('amount').addEventListener('input', validateAmount);
     document.getElementById('mobileNumber')?.addEventListener('input', validateAmount);
 
@@ -650,10 +650,10 @@
         const container = document.getElementById('durationGrid');
         container.innerHTML = '';
         let opts = [];
-        
+
         const repTypeEl = document.querySelector('input[name="repaymentType"]:checked');
         const repType = repTypeEl ? repTypeEl.value : 'EMI';
-        
+
         if (amt < 25000) {
             if (repType === 'Fixed') {
                 opts.push({val: '1-1.0', txt: '1 Month (1% Fixed Total)'});
@@ -672,11 +672,11 @@
             opts.push({val: '9-0.7', txt: '9 Months (0.7% Monthly)'});
             opts.push({val: '12-0.7', txt: '12 Months (0.7% Monthly)'});
         }
-        
+
         opts.forEach((o, index) => {
             const card = document.createElement('div');
             card.className = "cursor-pointer border border-gray-300 rounded-xl p-3 flex flex-col items-center justify-center text-center bg-white transition-all hover:border-brand-teal hover:shadow-md";
-            
+
             // Split title and subtitle to make UI look attractive and prevent wrapping
             let parts = o.txt.split(' (');
             let title = parts[0];
@@ -696,7 +696,7 @@
                 // Apply active styling
                 card.classList.remove('border-gray-300', 'bg-white');
                 card.classList.add('border-brand-teal', 'ring-2', 'ring-brand-teal', 'bg-teal-50');
-                
+
                 // Store value in hidden input for existing logic
                 document.getElementById('durationRateSelect').value = o.val;
             };
@@ -715,7 +715,7 @@
         const isOpen = (today.getMonth() === 5) && (today.getDate() >= 23 && today.getDate() <= 30);
         const banner = document.getElementById('dateBanner');
         const btn = document.getElementById('generateBtn');
-        
+
         if (!isOpen) {
             banner.classList.remove('hidden');
             btn.disabled = true; btn.classList.add('opacity-50', 'cursor-not-allowed');
@@ -727,7 +727,7 @@
     // --- 3. GENERATE & DOWNLOAD ---
     function generatePreview() {
         if (!currentMember) return alert("Please select a member first!");
-        
+
         const amt = parseFloat(document.getElementById('amount').value);
         const mode = document.getElementById('appMode').value;
         const dur = document.getElementById('durationRateSelect').value;
@@ -736,7 +736,7 @@
         document.getElementById('displayName').innerText = currentMember.fullName;
         document.getElementById('displayMobile').innerText = currentMember.mobileNumber || 'N/A';
         document.getElementById('displayAmount').innerText = amt.toFixed(2);
-        
+
         // Proxy Image Function
         const setProxyImg = (id, url) => {
             const el = document.getElementById(id);
@@ -752,11 +752,11 @@
 
         setProxyImg('apiApplicantPhoto', currentMember.profilePicUrl);
         setProxyImg('displaySignature', currentMember.signatureUrl);
-        
+
         // Handle Docs
         const file = document.getElementById('imageUpload').files[0];
         const docSection = document.getElementById('docSection');
-        
+
         if (file) {
             const reader = new FileReader();
             reader.onload = e => {
@@ -773,7 +773,7 @@
             if (frontUrl) {
                 docSection.classList.remove('hidden');
                 setProxyImg('docFrontImg', frontUrl);
-                
+
                 // Back URL check for display
                 if (backUrl && backUrl.length > 5) {
                     setProxyImg('docBackImg', backUrl);
@@ -786,7 +786,7 @@
         }
 
         if (mode === 'loan' || mode === 'credit10' || mode === 'recharge') {
-            
+
             if(mode === 'loan') document.getElementById('preview-subtitle').innerText = "PERSONAL LOAN";
             if(mode === 'credit10') document.getElementById('preview-subtitle').innerText = "10 DAYS CREDIT";
             if(mode === 'recharge') {
@@ -799,7 +799,7 @@
             document.getElementById('loanCalculations').classList.remove('hidden');
             document.getElementById('withdrawFields').classList.add('hidden');
             document.getElementById('withdrawNotice').classList.add('hidden');
-            
+
             if(currentMember.guarantorName && mode === 'loan') {
                 document.getElementById('displayGuarantor').innerText = currentMember.guarantorName;
                 document.getElementById('guarantorRow').classList.remove('hidden');
@@ -829,35 +829,35 @@
                 const [months, rate] = dur.split('-');
                 const mRate = parseFloat(rate);
                 const mCount = parseInt(months);
-                
+
                 const repTypeEl = document.querySelector('input[name="repaymentType"]:checked');
                 const repType = repTypeEl ? repTypeEl.value : 'EMI';
-                
+
                 const interest = amt * (mRate/100) * mCount;
                 total = amt + interest;
-                
+
                 if (amt < 25000 && repType === 'Fixed') {
                     emiDisplay = 'One-time Pay';
-                    rateDisplay = `${(mRate * mCount).toFixed(1)}% Fixed Total`;
+                    rateDisplay = `${(mRate * mCount).toFixed(1)}% Fixed Total (${mCount} Month${mCount > 1 ? 's' : ''})`;
                 } else if (amt >= 25000) {
                     emiDisplay = `₹${Math.ceil(total / mCount)}`;
-                    rateDisplay = `0.7% Monthly`;
+                    rateDisplay = `0.7% Monthly (${mCount} Months)`;
                 } else {
                     emiDisplay = `₹${Math.ceil(total / mCount)}`;
-                    rateDisplay = `1% Monthly`;
+                    rateDisplay = `1% Monthly (${mCount} Month${mCount > 1 ? 's' : ''})`;
                 }
                 endDate.setMonth(endDate.getMonth() + mCount);
             }
-            
+
             document.getElementById('displayRate').innerText = rateDisplay;
-            
+
             const emiParent = document.getElementById('displayEMI').parentNode;
             if (emiDisplay === 'One-time Pay') {
                 emiParent.innerHTML = '<span id="displayEMI" class="text-brand-teal font-bold text-sm">One-time Pay</span>';
             } else {
                 emiParent.innerHTML = '₹<span id="displayEMI">' + emiDisplay.replace('₹','') + '</span>';
             }
-            
+
             document.getElementById('displayTotal').innerText = total.toFixed(0);
             document.getElementById('repaymentDate').innerText = endDate.toLocaleDateString('en-GB');
 
@@ -867,7 +867,7 @@
             document.getElementById('loanCalculations').classList.add('hidden');
             document.getElementById('withdrawFields').classList.remove('hidden');
             document.getElementById('withdrawNotice').classList.remove('hidden');
-            
+
             document.getElementById('displayMemId').innerText = currentMember.membershipId;
             document.getElementById('displayJoinDate').innerText = currentMember.joiningDate;
             document.getElementById('displayAddress').innerText = currentMember.address;
@@ -887,7 +887,7 @@
         const btn = document.getElementById('downloadBtn');
         const cap = document.getElementById('capture');
         const scaler = document.getElementById('paper-scaler');
-        
+
         btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
         btn.disabled = true;
 
@@ -895,7 +895,7 @@
             const oldTrans = scaler.style.transform;
             scaler.style.transform = 'none';
             window.scrollTo(0,0);
-            
+
             // Image Loader with Timeout (Anti-Freeze)
             const imgs = Array.from(cap.getElementsByTagName('img'));
             const promises = imgs.map(img => {
@@ -903,7 +903,7 @@
                 if(!img.src || img.classList.contains('hidden')) return Promise.resolve();
                 return new Promise(r => { img.onload=r; img.onerror=r; });
             });
-            
+
             const timeout = new Promise(r => setTimeout(r, 3000)); // 3s Max Wait
             await Promise.race([Promise.all(promises), timeout]);
 
@@ -921,7 +921,7 @@
             link.download = `TCF_Slip_${document.getElementById('displayName').innerText.replace(/\s/g,'_')}.png`;
             link.href = canvas.toDataURL('image/png');
             link.click();
-            
+
             btn.innerHTML = '<i class="fas fa-check"></i> Done';
             setTimeout(() => { btn.innerHTML = '<i class="fas fa-download mr-2"></i> Download Slip'; btn.disabled = false; }, 2000);
 
