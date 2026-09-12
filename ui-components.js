@@ -132,17 +132,25 @@ export function displayMembers(members, adminSettings, container, onProfileClick
 
 
             // Normal Cards
-            card.className = 'normal-framed-card-wrapper animate-on-scroll';
-            const rankText = getRankText(index + 1);
+            const isDisabled = member.isDisabled === true;
+            card.className = `normal-framed-card-wrapper animate-on-scroll ${isDisabled ? 'disabled-member-card' : ''}`;
+            const rankText = isDisabled ? 'OFF' : getRankText(index + 1);
+
+            const balanceDisplayHTML = isDisabled
+                ? `<div class="normal-framed-balance disabled-balance-badge">
+                       <span class="disabled-tag-text">DISABLED</span>
+                       <span class="crossed-amount">${formatCurrency(member.balance)}</span>
+                   </div>`
+                : `<div class="normal-framed-balance">${formatCurrency(member.balance)}</div>`;
 
             card.innerHTML = `
                 <div class="normal-card-content">
-                    <img src="${member.displayImageUrl}" alt="${member.name}" class="normal-framed-photo" loading="lazy" onerror="this.onerror=null; this.src='${DEFAULT_IMAGE}';">
+                    <img src="${member.displayImageUrl}" alt="${member.name}" class="normal-framed-photo ${isDisabled ? 'faded-disabled-dp' : ''}" loading="lazy" onerror="this.onerror=null; this.src='${DEFAULT_IMAGE}';">
                     <img src="${normalCardFrameUrl}" alt="Card Frame" class="normal-card-frame-image">
-                    <div class="normal-card-rank">${rankText}</div>
+                    <div class="normal-card-rank ${isDisabled ? 'disabled-rank' : ''}">${rankText}</div>
                     <div class="normal-info-container">
                         <p class="normal-framed-name">${member.name}</p>
-                        <div class="normal-framed-balance">${formatCurrency(member.balance)}</div>
+                        ${balanceDisplayHTML}
                     </div>
                     ${member.isPrime ? '<div class="normal-prime-tag">Prime</div>' : ''}
                 </div>`;

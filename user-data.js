@@ -155,9 +155,17 @@ function processRawData(data) {
             sipStatus: { paid: isPaid, amount: sipAmount },
             loanCount: m.loanCount || 0,
             totalReturn: m.totalReturn || 0,
+            isDisabled: m.isDisabled === true,
             ...m
         };
-    }).sort((a, b) => b.balance - a.balance);
+    }).sort((a, b) => {
+        const aDisabled = a.isDisabled ? 1 : 0;
+        const bDisabled = b.isDisabled ? 1 : 0;
+        if (aDisabled !== bDisabled) {
+            return aDisabled - bDisabled; // Disabled wale sabse last me jayenge
+        }
+        return b.balance - a.balance;
+    });
 
     const stats = {
         totalSipAmount: parseFloat(rawAdmin.balanceStats?.totalSIP || 0),
