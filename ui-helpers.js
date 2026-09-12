@@ -242,11 +242,32 @@ export function showSipStatusModal(members) {
 
     if(!members || members.length === 0) return;
 
-    const sorted = [...members].sort((a, b) => (b.sipStatus.paid - a.sipStatus.paid) || a.name.localeCompare(b.name));
+    // Sorting: Active Paid -> Active Pending -> Disabled (Sabse Last)
+    const sorted = [...members].sort((a, b) => {
+        const aDis = a.isDisabled ? 1 : 0;
+        const bDis = b.isDisabled ? 1 : 0;
+        if (aDis !== bDis) return aDis - bDis;
+        return (b.sipStatus.paid - a.sipStatus.paid) || a.name.localeCompare(b.name);
+    });
+
     sorted.forEach(m => {
         const div = document.createElement('div');
-        div.className = 'sip-status-item';
-        div.innerHTML = `<img src="${m.displayImageUrl}" onerror="this.src='${DEFAULT_IMAGE}'"><span class="sip-status-name">${m.name}</span><span class="sip-status-badge ${m.sipStatus.paid ? 'paid' : 'not-paid'}">${m.sipStatus.paid ? 'Paid' : 'Pending'}</span>`;
+        const isDis = m.isDisabled === true;
+        div.className = `sip-status-item ${isDis ? 'disabled-sip-row' : ''}`;
+
+        let badgeClass = 'not-paid';
+        let badgeText = 'Pending';
+        if (isDis) {
+            badgeClass = 'disabled-badge';
+            badgeText = 'Disabled';
+        } else if (m.sipStatus.paid) {
+            badgeClass = 'paid';
+            badgeText = 'Paid';
+        }
+
+        const imgStyle = isDis ? 'style="filter: grayscale(100%); opacity: 0.5;"' : '';
+
+        div.innerHTML = `<img src="${m.displayImageUrl}" ${imgStyle} onerror="this.src='${DEFAULT_IMAGE}'"><span class="sip-status-name" ${isDis ? 'style="color: #888;"' : ''}>${m.name}</span><span class="sip-status-badge ${badgeClass}">${badgeText}</span>`;
         container.appendChild(div);
     });
     openModalById('sipStatusModal');

@@ -476,11 +476,12 @@ export function renderPage(data) {
         if (member) showFullImage(member.displayImageUrl, member.name);
     });
 
-    displayCustomCards(data.adminSettings?.custom_cards || {}, elements.customCards);
+        displayCustomCards(data.adminSettings?.custom_cards || {}, elements.customCards);
     displayCommunityLetters(data.adminSettings?.community_letters || {}, elements.letters, showFullImage);
 
-    updateInfoCards(approvedMembers.length, globalData.stats.totalLoanDisbursed);
-    startHeaderDisplayRotator(elements.headerDisplay, approvedMembers, globalData.stats);
+    const activeMembers = approvedMembers.filter(m => !m.isDisabled);
+    updateInfoCards(activeMembers.length, globalData.stats.totalLoanDisbursed);
+    startHeaderDisplayRotator(elements.headerDisplay, activeMembers, globalData.stats);
     buildInfoSlider(elements.infoSlider, globalData.members);
 
     renderProducts(globalData.products, elements.products, (emi, name, price) => {
@@ -616,8 +617,9 @@ function renderDashboardStatusCards() {
     }
 
     const approvedMembers = globalData.members.filter(m => m.status === 'Approved');
-    const totalApproved = approvedMembers.length;
-    const paidMembers = approvedMembers.filter(m => m.sipStatus?.paid).length;
+    const activeMembers = approvedMembers.filter(m => !m.isDisabled);
+    const totalApproved = activeMembers.length;
+    const paidMembers = activeMembers.filter(m => m.sipStatus?.paid).length;
 
     const searchParam = encodeURIComponent(member?.name || '');
     container.innerHTML = `

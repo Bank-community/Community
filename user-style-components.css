@@ -1450,3 +1450,17 @@
     color: #a0aec0 !important;
     font-weight: 500 !important;
 }
+
+
+
+/* SIP Modal Disabled Badge */
+.sip-status-badge.disabled-badge {
+    background-color: #6c757d !important;
+    color: #ffffff !important;
+    border: 1px solid #495057 !important;
+    opacity: 0.85;
+}
+.sip-status-item.disabled-sip-row {
+    background-color: #f8f9fa;
+    opacity: 0.85;
+}
